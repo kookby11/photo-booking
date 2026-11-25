@@ -130,6 +130,7 @@ textarea{resize:vertical;min-height:64px}
     <aside class="side">
       <div class="panel"><h2 id="sumTitle">สรุปเดือนนี้</h2><div class="stats" id="stats"></div><div class="legend" id="legend"></div></div>
       <div class="panel"><h2>งานที่กำลังจะถึง</h2><ul class="up" id="upcoming"></ul></div>
+      <button class="btn del" id="clearBtn" type="button">ล้างข้อมูลทั้งหมด</button>
     </aside>
   </div>
 </div>
@@ -162,6 +163,7 @@ textarea{resize:vertical;min-height:64px}
   </form>
 </dialog>
 
+<dialog id="clr"><div class="dsheet"><p style="margin:0 0 6px"><b>ล้างข้อมูลทั้งหมด?</b></p><p style="margin:0 0 14px;color:var(--mute)">คิวงาน รูปการ์ด และสลิปทั้งหมดในเบราว์เซอร์นี้จะถูกลบถาวร กู้คืนไม่ได้</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="clrNo" type="button">ยกเลิก</button><button class="btn pri" id="clrYes" type="button" style="background:var(--danger);border-color:var(--danger)">ลบทั้งหมด</button></div></div></dialog>
 <dialog id="day"><div class="dsheet"><div class="dhead"><b id="dayTitle"></b><button class="btn" id="dayClose" type="button">ปิด</button></div><ul class="up" id="dayList"></ul><button class="btn pri" id="dayAdd" type="button" style="width:100%;margin-top:14px">+ ลงคิวงานวันนี้</button></div></dialog>
 <dialog id="lb"><div style="padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center"><img id="lbImg" alt="รูปขยาย" style="max-width:100%;max-height:78vh;border-radius:8px"><button class="btn" id="lbClose" type="button">ปิด</button></div></dialog>
 
@@ -186,6 +188,7 @@ function uid(){return 'j'+Date.now().toString(36)+Math.random().toString(36).sli
 
 function load(){
   try{var r=localStorage.getItem(KEY);if(r){jobs=JSON.parse(r);return}}catch(e){}
+  jobs=[];return;
   var t=new Date(),y=t.getFullYear(),m=t.getMonth();
   function d(n){return iso(new Date(y,m,n))}
   jobs=[
@@ -349,6 +352,14 @@ $('file').addEventListener('change',function(){
    .catch(function(){$('upMsg').textContent='อัปโหลดรูปไม่สำเร็จ ลองใช้ไฟล์ JPG/PNG หรือตรวจสอบว่าเบราว์เซอร์อนุญาตให้เก็บข้อมูล';thumbs(k)});
 });
 $('dlg').addEventListener('close',function(){if(!saved)cur.added.forEach(idbDel);cur.added=[]});
+$('clearBtn').addEventListener('click',function(){$('clr').showModal()});
+$('clrNo').addEventListener('click',function(){$('clr').close()});
+$('clrYes').addEventListener('click',function(){
+  jobs=[];filter='';
+  try{localStorage.removeItem(KEY)}catch(e){}
+  (dbp?dbp.then(function(db){db.close()}).catch(function(){}):Promise.resolve()).then(function(){dbp=null;try{indexedDB.deleteDatabase('photo-booking-img')}catch(e){}});
+  $('clr').close();render();
+});
 $('lbClose').addEventListener('click',function(){$('lb').close()});
 $('lbImg').addEventListener('click',function(){$('lb').close()});
 load();render();
