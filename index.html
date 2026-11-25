@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ตารางคิวงานช่างภาพ</title>
+<meta name="theme-color" content="#0e5a64">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="คิวงานช่างภาพ">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📷%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -75,6 +80,8 @@ textarea{resize:vertical;min-height:64px}
 .warn{color:var(--danger);font-size:.85rem;min-height:0}
 .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .acts .sp{flex:1}
+.dsheet{padding:16px}
+.dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:1.05rem}
 .fld{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--mute)}
 .fld .btn{align-self:flex-start}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px}
@@ -88,7 +95,15 @@ textarea{resize:vertical;min-height:64px}
   .chip{font-size:0;height:8px;padding:0;border-radius:3px;border-left-width:0;background:hsl(var(--h) 60% 50%)}
   .chip.pending{background:transparent;border:1.5px dashed hsl(var(--h) 60% 50%)}
   .dn{font-size:.78rem}.add{display:none}
-  form{grid-template-columns:1fr}
+  form{grid-template-columns:1fr;padding:16px}
+  input,select,textarea{font-size:16px}
+  dialog{max-height:92vh;overflow:auto}
+  .app{padding:12px 10px 32px}
+  h1{font-size:1.2rem}
+  .nav{width:100%}
+  .month{min-width:0;flex:1;font-size:1.05rem}
+  .btn{min-height:44px}
+  .acts .btn{flex:1}
 }
 @media (prefers-reduced-motion:no-preference){dialog[open]{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:0}}}
 </style>
@@ -147,6 +162,7 @@ textarea{resize:vertical;min-height:64px}
   </form>
 </dialog>
 
+<dialog id="day"><div class="dsheet"><div class="dhead"><b id="dayTitle"></b><button class="btn" id="dayClose" type="button">ปิด</button></div><ul class="up" id="dayList"></ul><button class="btn pri" id="dayAdd" type="button" style="width:100%;margin-top:14px">+ ลงคิวงานวันนี้</button></div></dialog>
 <dialog id="lb"><div style="padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center"><img id="lbImg" alt="รูปขยาย" style="max-width:100%;max-height:78vh;border-radius:8px"><button class="btn" id="lbClose" type="button">ปิด</button></div></dialog>
 
 <script>
@@ -270,12 +286,29 @@ $('type').innerHTML=Object.keys(TYPES).map(function(k){return '<option value="'+
 $('status').innerHTML=Object.keys(STATUS).map(function(k){return '<option value="'+k+'">'+STATUS[k]+'</option>'}).join('');
 ['date','start','end','who2'].forEach(function(id){$(id).addEventListener('input',checkClash)});
 
+var narrow=window.matchMedia('(max-width:640px)'),dayDate=null;
+function openDay(s){
+  dayDate=s;var d=new Date(s+'T00:00:00');
+  $('dayTitle').textContent=d.getDate()+' '+MONTHS[d.getMonth()]+' '+(d.getFullYear()+543);
+  var list=visible().filter(function(j){return j.date===s}).sort(function(a,b){return a.start<b.start?-1:1});
+  $('dayList').innerHTML=list.length?list.map(function(j){
+    return '<li><button style="--h:'+TYPES[j.type].h+'" data-id="'+j.id+'"><b>'+esc(j.title)+'</b><small>'+j.start+'–'+j.end+' · '+esc(j.who)+' · '+STATUS[j.status]+'</small></button></li>';
+  }).join(''):'<li class="empty">ยังไม่มีคิวงานวันนี้</li>';
+  $('day').showModal();
+}
 $('grid').addEventListener('click',function(e){
-  var chip=e.target.closest('.chip');
-  if(chip){openForm(jobs.find(function(j){return j.id===chip.dataset.id}));return}
-  var cell=e.target.closest('.cell');
-  if(cell)openForm(null,cell.dataset.date);
+  var chip=e.target.closest('.chip'),cell=e.target.closest('.cell');
+  if(chip&&!narrow.matches){openForm(jobs.find(function(j){return j.id===chip.dataset.id}));return}
+  if(!cell)return;
+  if(narrow.matches||e.target.closest('.more'))openDay(cell.dataset.date);
+  else openForm(null,cell.dataset.date);
 });
+$('dayList').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  $('day').close();openForm(jobs.find(function(j){return j.id===b.dataset.id}));
+});
+$('dayAdd').addEventListener('click',function(){$('day').close();openForm(null,dayDate)});
+$('dayClose').addEventListener('click',function(){$('day').close()});
 $('upcoming').addEventListener('click',function(e){
   var b=e.target.closest('button');
   if(b)openForm(jobs.find(function(j){return j.id===b.dataset.id}));
