@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ตารางคิวงานช่างภาพ</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f2;--surface:#fff;--ink:#17222a;--mute:#5d6b73;--line:#d5dcdf;--accent:#0e5a64;--accent-ink:#fff;
+  --today:#fff6d6;--off:#f6f8f8;--danger:#b3261e;--cs:62%;--cl:91%;--ct:28%;--shadow:0 12px 40px rgba(10,25,30,.22);
+  font-family:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1619;--surface:#172126;--ink:#e6eef0;--mute:#93a4ab;--line:#2a373d;--accent:#5cc3cf;--accent-ink:#06262b;
+  --today:#3a3416;--off:#131c20;--danger:#ff8a80;--cs:35%;--cl:23%;--ct:80%;--shadow:0 12px 40px rgba(0,0,0,.6);}}
+:root[data-theme="dark"]{
+  --bg:#0f1619;--surface:#172126;--ink:#e6eef0;--mute:#93a4ab;--line:#2a373d;--accent:#5cc3cf;--accent-ink:#06262b;
+  --today:#3a3416;--off:#131c20;--danger:#ff8a80;--cs:35%;--cl:23%;--ct:80%;--shadow:0 12px 40px rgba(0,0,0,.6);}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:1280px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
+h1{font-size:1.5rem;font-weight:600;margin:0;letter-spacing:-.01em}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
+.btn.del{color:var(--danger)}
+select.btn{padding-right:8px}
+.nav{display:flex;align-items:center;gap:6px}
+.month{font-size:1.25rem;font-weight:600;min-width:9.5em;text-align:center}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.dow div{padding:8px 6px;text-align:center;font-size:.85rem;color:var(--mute);border-bottom:1px solid var(--line);background:var(--off)}
+.cell{min-height:112px;padding:4px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);cursor:pointer;position:relative;display:flex;flex-direction:column;gap:3px}
+.cell:nth-child(7n){border-right:0}
+.cell.off{background:var(--off)}
+.cell.off .dn{color:var(--mute);opacity:.6}
+.cell.today{background:var(--today)}
+.cell:hover .add{opacity:1}
+.dn{font-size:.85rem;font-weight:500;padding:0 4px;display:flex;justify-content:space-between;align-items:center}
+.add{opacity:0;color:var(--accent);font-size:1.05rem;line-height:1}
+.chip{--h:200;display:block;width:100%;text-align:left;border:0;border-left:4px solid hsl(var(--h) 60% 45%);border-radius:4px;padding:2px 6px;font-size:.78rem;line-height:1.35;cursor:pointer;
+  background:hsl(var(--h) var(--cs) var(--cl));color:hsl(var(--h) 40% var(--ct));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.pending{background:transparent;border:1px dashed hsl(var(--h) 50% 50%);border-left:4px solid hsl(var(--h) 60% 45%)}
+.chip.done{opacity:.6}
+.chip.clash{box-shadow:inset 0 0 0 1.5px var(--danger)}
+.more{font-size:.75rem;color:var(--mute);background:none;border:0;text-align:left;padding:0 6px;cursor:pointer}
+.side{display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h2{font-size:1rem;margin:0 0 10px;font-weight:600}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat b{display:block;font-size:1.35rem;font-weight:600}
+.stat span{font-size:.8rem;color:var(--mute)}
+.up{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.up button{width:100%;text-align:left;background:none;border:0;border-left:4px solid hsl(var(--h) 60% 45%);padding:2px 0 2px 10px;cursor:pointer}
+.up small{display:block;color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.8rem;color:var(--mute);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.empty{color:var(--mute);font-size:.9rem}
+dialog{border:0;border-radius:14px;padding:0;width:min(520px,calc(100vw - 24px));background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(8,16,20,.5)}
+form{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+form h3{grid-column:1/-1;margin:0;font-size:1.15rem}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mute)}
+label.full,.warn,.acts{grid-column:1/-1}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;width:100%}
+textarea{resize:vertical;min-height:64px}
+.warn{color:var(--danger);font-size:.85rem;min-height:0}
+.acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.acts .sp{flex:1}
+.fld{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--mute)}
+.fld .btn{align-self:flex-start}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.th{position:relative;width:84px;height:84px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
+.th img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
+.th .x{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:1}
+#lb{width:min(900px,calc(100vw - 24px))}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.side{order:2}}
+@media (max-width:640px){
+  .cell{min-height:74px;padding:3px 2px}
+  .chip{font-size:0;height:8px;padding:0;border-radius:3px;border-left-width:0;background:hsl(var(--h) 60% 50%)}
+  .chip.pending{background:transparent;border:1.5px dashed hsl(var(--h) 60% 50%)}
+  .dn{font-size:.78rem}.add{display:none}
+  form{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){dialog[open]{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:0}}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>ตารางคิวงานช่างภาพ</h1>
+    <div class="sp"></div>
+    <select id="who" class="btn" aria-label="กรองตามช่างภาพ"></select>
+    <button class="btn pri" id="newBtn">+ ลงคิวงาน</button>
+  </header>
+  <div class="nav" style="margin-bottom:12px">
+    <button class="btn" id="prev" aria-label="เดือนก่อนหน้า">‹</button>
+    <div class="month" id="monthLabel"></div>
+    <button class="btn" id="next" aria-label="เดือนถัดไป">›</button>
+    <button class="btn" id="todayBtn">วันนี้</button>
+  </div>
+  <div class="layout">
+    <div class="cal">
+      <div class="dow"><div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <aside class="side">
+      <div class="panel"><h2 id="sumTitle">สรุปเดือนนี้</h2><div class="stats" id="stats"></div><div class="legend" id="legend"></div></div>
+      <div class="panel"><h2>งานที่กำลังจะถึง</h2><ul class="up" id="upcoming"></ul></div>
+    </aside>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form id="f" method="dialog">
+    <h3 id="dlgTitle">ลงคิวงานใหม่</h3>
+    <label class="full">ชื่องาน / ลูกค้า<input id="title" required placeholder="เช่น งานแต่ง คุณมายด์ & คุณเต้"></label>
+    <label>ประเภทงาน<select id="type"></select></label>
+    <label>สถานะ<select id="status"></select></label>
+    <label>วันที่<input type="date" id="date" required></label>
+    <label>ช่างภาพ<input id="who2" list="photogs" required placeholder="ชื่อช่างภาพ"><datalist id="photogs"></datalist></label>
+    <label>เวลาเริ่ม<input type="time" id="start" required value="09:00"></label>
+    <label>เวลาสิ้นสุด<input type="time" id="end" required value="17:00"></label>
+    <label class="full">สถานที่<input id="place" placeholder="เช่น โรงแรม / สตูดิโอ / ลิงก์แผนที่"></label>
+    <label>ราคา (บาท)<input type="number" id="price" min="0" step="100" placeholder="0"></label>
+    <label>มัดจำแล้ว (บาท)<input type="number" id="deposit" min="0" step="100" placeholder="0"></label>
+    <div class="fld"><span>การ์ดจากลูกค้า (การ์ดเชิญ / ตัวอย่างงาน)</span><div class="thumbs" id="th-cards"></div><button type="button" class="btn" data-add="cards">+ เพิ่มรูปการ์ด</button></div>
+    <div class="fld"><span>สลิปโอนมัดจำ</span><div class="thumbs" id="th-slips"></div><button type="button" class="btn" data-add="slips">+ เพิ่มสลิป</button></div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+    <div class="warn" id="upMsg" role="alert"></div>
+    <label class="full">หมายเหตุ<textarea id="note" placeholder="รายละเอียดเพิ่มเติม เช่น เบอร์ติดต่อ ธีมงาน"></textarea></label>
+    <div class="warn" id="warn" role="alert"></div>
+    <div class="acts">
+      <button type="button" class="btn del" id="delBtn">ลบงานนี้</button>
+      <div class="sp"></div>
+      <button type="button" class="btn" id="cancelBtn">ยกเลิก</button>
+      <button type="submit" class="btn pri" id="saveBtn">บันทึกคิวงาน</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="lb"><div style="padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center"><img id="lbImg" alt="รูปขยาย" style="max-width:100%;max-height:78vh;border-radius:8px"><button class="btn" id="lbClose" type="button">ปิด</button></div></dialog>
+
+<script>
+(function(){
+var TYPES={wedding:{n:'แต่งงาน',h:340},portrait:{n:'พอร์ตเทรต',h:200},event:{n:'อีเวนต์',h:30},product:{n:'สินค้า / อาหาร',h:140},grad:{n:'รับปริญญา',h:265},other:{n:'อื่น ๆ',h:215}};
+var STATUS={pending:'รอยืนยัน',confirmed:'ยืนยันแล้ว',shot:'ถ่ายเสร็จ',delivered:'ส่งงานแล้ว'};
+var MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+var KEY='photo-booking-v1';
+var $=function(id){return document.getElementById(id)};
+var jobs=[],view=new Date(),filter='',editing=null,presetDate=null;
+view.setDate(1);
+
+function pad(n){return String(n).padStart(2,'0')}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function baht(n){return (Number(n)||0).toLocaleString('th-TH')}
+function thDate(s){var d=new Date(s+'T00:00:00');return d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3).replace('มกร','ม.ค.')}
+var SHORT=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function shortDate(s){var d=new Date(s+'T00:00:00');return d.getDate()+' '+SHORT[d.getMonth()]}
+function uid(){return 'j'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function load(){
+  try{var r=localStorage.getItem(KEY);if(r){jobs=JSON.parse(r);return}}catch(e){}
+  var t=new Date(),y=t.getFullYear(),m=t.getMonth();
+  function d(n){return iso(new Date(y,m,n))}
+  jobs=[
+    {id:uid(),title:'งานแต่ง คุณมายด์ & คุณเต้',type:'wedding',status:'confirmed',date:d(7),start:'08:00',end:'18:00',who:'พี่เอ',place:'โรงแรมริมแม่น้ำ',price:28000,deposit:10000,note:''},
+    {id:uid(),title:'ถ่ายสินค้า ร้านกาแฟ Dawn',type:'product',status:'delivered',date:d(3),start:'10:00',end:'14:00',who:'ฟ้า',place:'สตูดิโอ',price:6500,deposit:6500,note:''},
+    {id:uid(),title:'พอร์ตเทรต คุณพลอย',type:'portrait',status:'confirmed',date:d(12),start:'15:00',end:'17:00',who:'น้องบีม',place:'สวนลุมพินี',price:3500,deposit:1000,note:''},
+    {id:uid(),title:'สัมมนาประจำปี บริษัทเอ็กซ์',type:'event',status:'confirmed',date:d(18),start:'09:00',end:'16:00',who:'พี่เอ',place:'ศูนย์ประชุม',price:15000,deposit:5000,note:''},
+    {id:uid(),title:'รับปริญญา ม.เกษตร',type:'grad',status:'pending',date:d(18),start:'13:00',end:'17:00',who:'พี่เอ',place:'มหาวิทยาลัย',price:4000,deposit:0,note:'ทับกับงานสัมมนา'},
+    {id:uid(),title:'ถ่ายอาหาร เมนูใหม่ ร้านบ้านสวน',type:'product',status:'confirmed',date:d(24),start:'10:00',end:'15:00',who:'ฟ้า',place:'หน้าร้าน',price:8000,deposit:3000,note:''},
+    {id:uid(),title:'งานแต่ง คุณแพรว & คุณกอล์ฟ',type:'wedding',status:'pending',date:d(28),start:'07:30',end:'19:00',who:'พี่เอ',place:'รีสอร์ตเขาใหญ่',price:32000,deposit:0,note:'รอโอนมัดจำ'}
+  ];
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(jobs))}catch(e){}}
+
+function toMin(t){var p=t.split(':');return (+p[0])*60+(+p[1])}
+function clashes(j){
+  return jobs.filter(function(o){
+    return o.id!==j.id&&o.date===j.date&&o.who.trim()&&o.who.trim()===j.who.trim()&&toMin(o.start)<toMin(j.end)&&toMin(j.start)<toMin(o.end);
+  });
+}
+function visible(){return jobs.filter(function(j){return !filter||j.who===filter})}
+
+function render(){
+  var y=view.getFullYear(),m=view.getMonth();
+  $('monthLabel').textContent=MONTHS[m]+' '+(y+543);
+  $('sumTitle').textContent='สรุปเดือน'+MONTHS[m];
+  var first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());
+  var todayIso=iso(new Date()),list=visible(),html='';
+  var weeks=Math.ceil((first.getDay()+new Date(y,m+1,0).getDate())/7);
+  for(var i=0;i<weeks*7;i++){
+    var d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i),s=iso(d);
+    var day=list.filter(function(j){return j.date===s}).sort(function(a,b){return a.start<b.start?-1:1});
+    var cls='cell'+(d.getMonth()!==m?' off':'')+(s===todayIso?' today':'');
+    html+='<div class="'+cls+'" data-date="'+s+'"><div class="dn"><span>'+d.getDate()+'</span><span class="add" aria-hidden="true">+</span></div>';
+    day.slice(0,3).forEach(function(j){
+      var c='chip'+(j.status==='pending'?' pending':'')+(j.status==='delivered'||j.status==='shot'?' done':'')+(clashes(j).length?' clash':'');
+      html+='<button class="'+c+'" style="--h:'+TYPES[j.type].h+'" data-id="'+j.id+'" title="'+esc(j.title+' · '+j.start+'–'+j.end+' · '+j.who)+'">'+j.start+' '+esc(j.title)+(((j.cards&&j.cards.length)||(j.slips&&j.slips.length))?' 🖼':'')+'</button>';
+    });
+    if(day.length>3)html+='<button class="more" data-date="'+s+'" data-more="1">+อีก '+(day.length-3)+' งาน</button>';
+    html+='</div>';
+  }
+  $('grid').innerHTML=html;
+
+  var mp=y+'-'+pad(m+1),mj=list.filter(function(j){return j.date.indexOf(mp)===0});
+  var income=mj.reduce(function(a,j){return a+(+j.price||0)},0);
+  var owed=mj.reduce(function(a,j){return a+Math.max(0,(+j.price||0)-(+j.deposit||0))},0);
+  var pend=mj.filter(function(j){return j.status==='pending'}).length;
+  $('stats').innerHTML='<div class="stat"><b>'+mj.length+'</b><span>งานทั้งหมด</span></div><div class="stat"><b>'+pend+'</b><span>รอยืนยัน</span></div><div class="stat"><b>฿'+baht(income)+'</b><span>มูลค่างาน</span></div><div class="stat"><b>฿'+baht(owed)+'</b><span>ยังไม่ได้รับ</span></div>';
+  $('legend').innerHTML=Object.keys(TYPES).map(function(k){return '<span><i style="background:hsl('+TYPES[k].h+' 60% 45%)"></i>'+TYPES[k].n+'</span>'}).join('');
+
+  var up=list.filter(function(j){return j.date>=todayIso&&j.status!=='delivered'}).sort(function(a,b){return (a.date+a.start)<(b.date+b.start)?-1:1}).slice(0,5);
+  $('upcoming').innerHTML=up.length?up.map(function(j){
+    return '<li><button style="--h:'+TYPES[j.type].h+'" data-id="'+j.id+'"><b>'+esc(j.title)+'</b><small>'+shortDate(j.date)+' · '+j.start+'–'+j.end+' · '+esc(j.who)+'</small></button></li>';
+  }).join(''):'<li class="empty">ยังไม่มีงานที่รอถ่าย กดวันที่ในปฏิทินเพื่อลงคิวงาน</li>';
+  renderWho();
+}
+function renderWho(){
+  var names=Array.from(new Set(jobs.map(function(j){return j.who}).filter(Boolean))).sort();
+  $('who').innerHTML='<option value="">ช่างภาพทุกคน</option>'+names.map(function(n){return '<option'+(n===filter?' selected':'')+'>'+esc(n)+'</option>'}).join('');
+  $('photogs').innerHTML=names.map(function(n){return '<option value="'+esc(n)+'">'}).join('');
+}
+
+var cur={cards:[],slips:[],added:[]},addKind=null,saved=false,dbp=null;
+function idb(){if(!dbp)dbp=new Promise(function(res,rej){try{var r=indexedDB.open('photo-booking-img',1);r.onupgradeneeded=function(){r.result.createObjectStore('img')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}});return dbp}
+function idbPut(id,v){return idb().then(function(db){return new Promise(function(res,rej){var t=db.transaction('img','readwrite');t.objectStore('img').put(v,id);t.oncomplete=res;t.onerror=function(){rej(t.error)}})})}
+function idbGet(id){return idb().then(function(db){return new Promise(function(res,rej){var q=db.transaction('img','readonly').objectStore('img').get(id);q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}})}).catch(function(){return null})}
+function idbDel(id){return idb().then(function(db){db.transaction('img','readwrite').objectStore('img').delete(id)}).catch(function(){})}
+function shrink(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var s=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas'),x;c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.82))};im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('bad image'))};im.src=u})}
+function thumbs(kind){var box=$('th-'+kind);box.innerHTML='';if(!cur[kind].length){box.innerHTML='<span class="empty">ยังไม่มีรูป</span>';return}
+  cur[kind].forEach(function(id){var w=document.createElement('div');w.className='th';w.innerHTML='<img alt=""><button type="button" class="x" aria-label="ลบรูป" data-kind="'+kind+'" data-id="'+id+'">×</button>';box.appendChild(w);idbGet(id).then(function(v){if(v)w.querySelector('img').src=v})})}
+function openForm(job,date){
+  editing=job||null;
+  $('dlgTitle').textContent=job?'แก้ไขคิวงาน':'ลงคิวงานใหม่';
+  $('saveBtn').textContent=job?'บันทึกการแก้ไข':'บันทึกคิวงาน';
+  $('delBtn').style.display=job?'':'none';
+  var j=job||{title:'',type:'wedding',status:'pending',date:date||iso(new Date()),start:'09:00',end:'17:00',who:filter||'',place:'',price:'',deposit:'',note:''};
+  $('title').value=j.title;$('type').value=j.type;$('status').value=j.status;$('date').value=j.date;
+  $('start').value=j.start;$('end').value=j.end;$('who2').value=j.who;$('place').value=j.place;
+  $('price').value=j.price;$('deposit').value=j.deposit;$('note').value=j.note;
+  cur={cards:(j.cards||[]).slice(),slips:(j.slips||[]).slice(),added:[]};saved=false;$('upMsg').textContent='';thumbs('cards');thumbs('slips');
+  checkClash();
+  $('dlg').showModal();
+  if(!job)$('title').focus();
+}
+function formJob(){
+  return {id:editing?editing.id:uid(),title:$('title').value.trim(),type:$('type').value,status:$('status').value,date:$('date').value,start:$('start').value,end:$('end').value,who:$('who2').value.trim(),place:$('place').value.trim(),price:+$('price').value||0,deposit:+$('deposit').value||0,note:$('note').value.trim(),cards:cur.cards.slice(),slips:cur.slips.slice()};
+}
+function checkClash(){
+  var j=formJob(),w='';
+  if(j.start&&j.end&&j.date&&j.who){
+    if(toMin(j.end)<=toMin(j.start)){w='เวลาสิ้นสุดต้องหลังเวลาเริ่ม'}
+    else{var c=clashes(j);if(c.length)w='เวลาทับกับ “'+c[0].title+'” ('+c[0].start+'–'+c[0].end+') ของ'+j.who+' ยังบันทึกได้ แต่ควรตรวจสอบก่อน'}
+  }
+  $('warn').textContent=w;
+}
+
+$('type').innerHTML=Object.keys(TYPES).map(function(k){return '<option value="'+k+'">'+TYPES[k].n+'</option>'}).join('');
+$('status').innerHTML=Object.keys(STATUS).map(function(k){return '<option value="'+k+'">'+STATUS[k]+'</option>'}).join('');
+['date','start','end','who2'].forEach(function(id){$(id).addEventListener('input',checkClash)});
+
+$('grid').addEventListener('click',function(e){
+  var chip=e.target.closest('.chip');
+  if(chip){openForm(jobs.find(function(j){return j.id===chip.dataset.id}));return}
+  var cell=e.target.closest('.cell');
+  if(cell)openForm(null,cell.dataset.date);
+});
+$('upcoming').addEventListener('click',function(e){
+  var b=e.target.closest('button');
+  if(b)openForm(jobs.find(function(j){return j.id===b.dataset.id}));
+});
+$('f').addEventListener('submit',function(e){
+  e.preventDefault();
+  var j=formJob();
+  if(toMin(j.end)<=toMin(j.start)){checkClash();return}
+  saved=true;
+  cur.added.forEach(function(id){if(j.cards.indexOf(id)<0&&j.slips.indexOf(id)<0)idbDel(id)});
+  if(editing){(editing.cards||[]).concat(editing.slips||[]).forEach(function(id){if(j.cards.indexOf(id)<0&&j.slips.indexOf(id)<0)idbDel(id)})}
+  if(editing){jobs=jobs.map(function(o){return o.id===j.id?j:o})}else{jobs.push(j)}
+  save();
+  var d=new Date(j.date+'T00:00:00');view=new Date(d.getFullYear(),d.getMonth(),1);
+  $('dlg').close();render();
+});
+$('delBtn').addEventListener('click',function(){
+  if(!editing)return;
+  (editing.cards||[]).concat(editing.slips||[],cur.added).forEach(idbDel);saved=true;
+  jobs=jobs.filter(function(o){return o.id!==editing.id});save();$('dlg').close();render();
+});
+$('cancelBtn').addEventListener('click',function(){$('dlg').close()});
+$('newBtn').addEventListener('click',function(){openForm(null,iso(new Date()))});
+$('prev').addEventListener('click',function(){view=new Date(view.getFullYear(),view.getMonth()-1,1);render()});
+$('next').addEventListener('click',function(){view=new Date(view.getFullYear(),view.getMonth()+1,1);render()});
+$('todayBtn').addEventListener('click',function(){var t=new Date();view=new Date(t.getFullYear(),t.getMonth(),1);render()});
+$('who').addEventListener('change',function(){filter=$('who').value;render()});
+
+$('dlg').addEventListener('click',function(e){var t=e.target;
+  if(t.dataset&&t.dataset.add){addKind=t.dataset.add;$('file').click();return}
+  if(t.classList.contains('x')){var k=t.dataset.kind,i=cur[k].indexOf(t.dataset.id);if(i>=0)cur[k].splice(i,1);thumbs(k);return}
+  if(t.tagName==='IMG'&&t.src&&t.closest('.th')){$('lbImg').src=t.src;$('lb').showModal()}
+});
+$('file').addEventListener('change',function(){
+  var inp=this,files=Array.from(inp.files),k=addKind;inp.value='';$('upMsg').textContent='';
+  files.reduce(function(p,f){return p.then(function(){return shrink(f).then(function(d){var id='i'+uid();return idbPut(id,d).then(function(){cur[k].push(id);cur.added.push(id)})})})},Promise.resolve())
+   .then(function(){thumbs(k)})
+   .catch(function(){$('upMsg').textContent='อัปโหลดรูปไม่สำเร็จ ลองใช้ไฟล์ JPG/PNG หรือตรวจสอบว่าเบราว์เซอร์อนุญาตให้เก็บข้อมูล';thumbs(k)});
+});
+$('dlg').addEventListener('close',function(){if(!saved)cur.added.forEach(idbDel);cur.added=[]});
+$('lbClose').addEventListener('click',function(){$('lb').close()});
+$('lbImg').addEventListener('click',function(){$('lb').close()});
+load();render();
+})();
+</script>
+</body>
+</html>
