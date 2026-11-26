@@ -87,7 +87,7 @@ textarea{resize:vertical;min-height:64px}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px}
 .th{position:relative;width:84px;height:84px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
 .th img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
-.th .x{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:1}
+.th .x,.th .lx{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:1}
 #lb{width:min(900px,calc(100vw - 24px))}
 #qt{width:min(720px,calc(100vw - 16px));max-height:94vh;overflow:auto}
 @media (max-width:900px){.layout{grid-template-columns:1fr}.side{order:2}}
@@ -156,6 +156,7 @@ textarea{resize:vertical;min-height:64px}
     <label>มัดจำแล้ว (บาท)<input type="number" id="deposit" min="0" step="100" placeholder="0"></label>
     <div class="fld"><span>การ์ดจากลูกค้า (การ์ดเชิญ / ตัวอย่างงาน)</span><div class="thumbs" id="th-cards"></div><button type="button" class="btn" data-add="cards">+ เพิ่มรูปการ์ด</button></div>
     <div class="fld"><span>สลิปโอนมัดจำ</span><div class="thumbs" id="th-slips"></div><button type="button" class="btn" data-add="slips">+ เพิ่มสลิป</button></div>
+    <div class="fld"><span>โลโก้ร้าน (ใช้ในใบเสนอราคา)</span><div class="thumbs" id="th-logo"></div><button type="button" class="btn" id="logoBtn">+ อัปโหลดโลโก้</button><input type="file" id="flogo2" accept="image/*" hidden></div>
     <input type="file" id="file" accept="image/*" multiple hidden>
     <div class="warn" id="upMsg" role="alert"></div>
     <label class="full">หมายเหตุ<textarea id="note" placeholder="รายละเอียดเพิ่มเติม เช่น เบอร์ติดต่อ ธีมงาน"></textarea></label>
@@ -289,7 +290,7 @@ function openForm(job,date){
   $('title').value=j.title;$('type').value=j.type;$('status').value=j.status;$('date').value=j.date;
   $('start').value=j.start;$('end').value=j.end;$('who2').value=j.who;$('place').value=j.place;
   $('price').value=j.price;$('deposit').value=j.deposit;$('note').value=j.note;$('cust').value=j.cust||'';$('ccontact').value=j.contact||'';$('pcount').value=j.pcount||1;$('detail').value=j.detail||'';
-  cur={cards:(j.cards||[]).slice(),slips:(j.slips||[]).slice(),added:[]};saved=false;$('upMsg').textContent='';thumbs('cards');thumbs('slips');
+  cur={cards:(j.cards||[]).slice(),slips:(j.slips||[]).slice(),added:[]};saved=false;$('upMsg').textContent='';thumbs('cards');thumbs('slips');logoThumb();
   checkClash();
   $('dlg').showModal();
   if(!job)$('title').focus();
@@ -395,7 +396,7 @@ async function drawQuote(j){
  function fit(im,bx,by,bw,bh){var s=Math.min(bw/im.width,bh/im.height);x.drawImage(im,bx+(bw-im.width*s)/2,by+(bh-im.height*s)/2,im.width*s,im.height*s)}
  var lg=await idbGet('shop-logo'),qr=await idbGet('shop-qr'),sl=(j.slips&&j.slips[0])?await idbGet(j.slips[0]):null;
  var limg=lg?await loadImg(lg):null,qimg=qr?await loadImg(qr):null,simg=sl?await loadImg(sl):null;
- if(limg)fit(limg,90,80,300,260);else T((S.name||'').split(' ')[0],90,250,140,600);
+ if(limg)fit(limg,90,70,440,230);else T((S.name||'').split(' ')[0],90,250,140,600);
  T('ใบเสนอราคา',1150,130,52,600,'right');T(S.name,1150,200,28,400,'right');T('LINE : '+S.line,1150,244,28,400,'right');T(S.phone,1150,288,28,400,'right');
  var d=new Date(j.date+'T00:00:00'),dt=d.getDate()+' '+MONTHS[d.getMonth()]+' '+(d.getFullYear()+543),n=new Date(),nt=n.getDate()+' '+MONTHS[n.getMonth()]+' '+(n.getFullYear()+543);
  var det=[j.detail||TYPES[j.type].n,dt,j.start+'–'+j.end+' น.',j.place].filter(Boolean).join(' · ');
@@ -403,10 +404,10 @@ async function drawQuote(j){
  T('รายละเอียด / Detail',90,500,28,600);T(det,420,500,28,400,'left',720);
  T('ติดต่อ / Contact',90,570,28,600);T(j.contact||'-',420,570,28,400,'left',720);
  L(80,640,1160,640);
- T('รายการจ้าง',100,700,28,600);T('ราคา',640,700,28,600,'center');T('มัดจำ',790,700,28,600,'center');T('จำนวนช่างภาพ',960,700,28,600,'center');T('เก็บวันงาน',1100,700,28,600,'center');
+ T('รายการจ้าง',100,700,28,600);T('ราคา',610,700,28,600,'center');T('มัดจำ',750,700,28,600,'center');T('จำนวนช่างภาพ',895,700,28,600,'center');T('เก็บวันงาน',1065,700,28,600,'center');
  L(80,730,1160,730);
  var p=+j.price||0,dp=+j.deposit||0;
- T(j.title,100,790,28,400,'left',440);T(baht(p)+'.-',640,790,28,400,'center');T(baht(dp)+'.-',790,790,28,400,'center');T(String(j.pcount||1),960,790,28,400,'center');T(baht(Math.max(0,p-dp))+'.-',1100,790,28,400,'center');
+ T(j.title,100,790,28,400,'left',440);T(baht(p)+'.-',610,790,28,400,'center');T(baht(dp)+'.-',750,790,28,400,'center');T(String(j.pcount||1),895,790,28,400,'center');T(baht(Math.max(0,p-dp))+'.-',1065,790,28,400,'center');
  L(80,1130,1160,1130);L(720,1130,720,1560);L(80,1560,1160,1560);
  T('ชื่อบัญชี / account name',90,1190,24,600);T(S.accname,400,1190,24,400,'left',300);
  T('เลขบัญชี / account number',90,1240,24,600);T(S.accnum+' '+S.bank,440,1240,24,400,'left',270);
@@ -460,6 +461,10 @@ $('shopNo').addEventListener('click',function(){$('shop').close()});
 $('sf').addEventListener('submit',function(e){e.preventDefault();var o={};Object.keys(SF).forEach(function(k){o[SF[k]]=$(k).value.trim()});try{localStorage.setItem(SHOPKEY,JSON.stringify(o))}catch(x){}$('shop').close()});
 function shopFile(inp,id,st){inp.addEventListener('change',function(){var f=inp.files[0];if(!f)return;shrink(f).then(function(d){return idbPut(id,d)}).then(function(){$(st).textContent='อัปโหลดแล้ว ✓'}).catch(function(){$(st).textContent='อัปโหลดไม่สำเร็จ'})})}
 shopFile($('flogo'),'shop-logo','logoSt');shopFile($('fqr'),'shop-qr','qrSt');
+function logoThumb(){var b=$('th-logo');idbGet('shop-logo').then(function(v){b.innerHTML='';if(!v){b.innerHTML='<span class="empty">ยังไม่มีโลโก้</span>';return}var w=document.createElement('div');w.className='th';w.innerHTML='<img alt="โลโก้" style="object-fit:contain;background:#fff"><button type="button" class="lx" id="logoDel" aria-label="ลบโลโก้">×</button>';w.querySelector('img').src=v;b.appendChild(w)})}
+$('logoBtn').addEventListener('click',function(){$('flogo2').click()});
+$('flogo2').addEventListener('change',function(){var f=this.files[0];this.value='';if(!f)return;shrink(f).then(function(d){return idbPut('shop-logo',d)}).then(logoThumb).catch(function(){$('upMsg').textContent='อัปโหลดโลโก้ไม่สำเร็จ'})});
+$('th-logo').addEventListener('click',function(e){if(e.target.id==='logoDel')idbDel('shop-logo').then(logoThumb)});
 $('clearBtn').addEventListener('click',function(){$('clr').showModal()});
 $('clrNo').addEventListener('click',function(){$('clr').close()});
 $('clrYes').addEventListener('click',function(){
