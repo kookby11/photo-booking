@@ -294,7 +294,7 @@ function renderWho(){
 var cur={cards:[],slips:[],added:[]},addKind=null,saved=false,dbp=null;
 function idb(){if(!dbp)dbp=new Promise(function(res,rej){try{var r=indexedDB.open('photo-booking-img',1);r.onupgradeneeded=function(){r.result.createObjectStore('img')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}catch(e){rej(e)}});return dbp}
 function idbLocalPut(id,v){return idb().then(function(db){return new Promise(function(res,rej){var t=db.transaction('img','readwrite');t.objectStore('img').put(v,id);t.oncomplete=res;t.onerror=function(){rej(t.error)}})})}
-var SUPABASE_URL='https://lforpjccabunsbjtsrts.supabase.co',SUPABASE_KEY='PASTE_PUBLISHABLE_KEY_HERE';
+var SUPABASE_URL='https://lforpjccabunsbjtsrts.supabase.co',SUPABASE_KEY='sb_publishable_aXPYcjyAbawWhmaQL4cNkA_U8oy1hX3';
 var sb=null,cloud=null,recovering=false;
 function noop(){}
 function chk(r){if(r.error)throw r.error}
@@ -361,7 +361,7 @@ async function startCloud(user){
  setSync(ok?'cloud':'local');
 }
 function cloudInit(){
- if(!window.supabase||/PASTE/.test(SUPABASE_KEY)){setSync('local');return}
+ if(!window.supabase||/PASTE/.test(SUPABASE_KEY)){setSync('local');$('sync').textContent=!window.supabase?'โหลดระบบล็อกอินไม่สำเร็จ (ตรวจอินเทอร์เน็ต)':'ยังไม่ได้ใส่ key สำหรับล็อกอิน';$('sync').style.color='var(--danger)';return}
  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  var home=location.origin+location.pathname;
  $('auth').addEventListener('cancel',function(e){e.preventDefault()});
