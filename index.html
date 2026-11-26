@@ -396,7 +396,7 @@ async function drawQuote(j){
  function fit(im,bx,by,bw,bh){var s=Math.min(bw/im.width,bh/im.height);x.drawImage(im,bx+(bw-im.width*s)/2,by+(bh-im.height*s)/2,im.width*s,im.height*s)}
  var lg=await idbGet('shop-logo'),qr=await idbGet('shop-qr'),sl=(j.slips&&j.slips[0])?await idbGet(j.slips[0]):null;
  var limg=lg?await loadImg(lg):null,qimg=qr?await loadImg(qr):null,simg=sl?await loadImg(sl):null;
- if(limg)fit(limg,90,70,440,230);else T((S.name||'').split(' ')[0],90,250,140,600);
+ if(limg)fit(limg,70,50,680,320);else T((S.name||'').split(' ')[0],90,250,140,600);
  T('ใบเสนอราคา',1150,130,52,600,'right');T(S.name,1150,200,28,400,'right');T('LINE : '+S.line,1150,244,28,400,'right');T(S.phone,1150,288,28,400,'right');
  var d=new Date(j.date+'T00:00:00'),dt=d.getDate()+' '+MONTHS[d.getMonth()]+' '+(d.getFullYear()+543),n=new Date(),nt=n.getDate()+' '+MONTHS[n.getMonth()]+' '+(n.getFullYear()+543);
  var det=[j.detail||TYPES[j.type].n,dt,j.start+'–'+j.end+' น.',j.place].filter(Boolean).join(' · ');
